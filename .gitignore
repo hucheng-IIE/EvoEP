@@ -6,14 +6,14 @@ __pycache__/
 .venv/
 
 # Local data and model files
-data/
-pretrained/
+/data/
+/pretrained/
 
 # Generated training state
-artifacts/
-cache/
-runs/
-tmp/
+/artifacts/
+/cache/
+/runs/
+/tmp/
 
 # Checkpoints and large arrays
 *.pt
