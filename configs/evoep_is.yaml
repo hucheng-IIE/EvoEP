@@ -1,0 +1,29 @@
+dataset: IS
+data:
+  text_policy: linked_event_proxy
+text:
+  model_path: null
+  revision: null
+  pooling: cls
+model:
+  name: evoep
+  hidden_dim: 128
+  graph_layers: 1
+  temporal_layers: 2
+  attention_heads: 4
+  temporal_ffn_dim: 512
+  experts: 4
+  expert_bottleneck: 32
+  retrieval_top_k: 0
+  transition_prior: false
+  dropout: 0.1
+train:
+  device: cuda
+  lr: 0.0001
+  weight_decay: 0.001
+  batch_size: 4
+  epochs: 50
+  patience: 8
+  pseudo_fraction: 0.1
+  lambda_pseudo: 1.0
+  lambda_balance: 0.01

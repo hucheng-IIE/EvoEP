@@ -1,0 +1,6 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the EvoEP paper."
+title: "EvoEP: Learning Temporal Evolution for Open-Set Event Prediction"
+type: software
+version: 1.0.0
+date-released: 2026-09-22

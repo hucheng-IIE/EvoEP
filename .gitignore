@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+
+# Local data and model files
+data/
+pretrained/
+
+# Generated training state
+artifacts/
+cache/
+runs/
+tmp/
+
+# Checkpoints and large arrays
+*.pt
+*.pth
+*.ckpt
+*.npy
+*.npz
+*.sqlite*
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
