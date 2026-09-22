@@ -8,21 +8,6 @@ window. Training observes instances from seen event types only. At inference
 time, the candidate set may also contain unseen types with descriptions but no
 training instances.
 
-## Method
-
-EvoEP contains three components:
-
-1. **Event semantic representation learning** encodes event-type descriptions,
-   entity names, and permitted event articles with a frozen language encoder.
-2. **Event evolution learning** builds daily relational graphs, encodes
-   historical events, and retrieves candidate-conditioned temporal context.
-   Two shared evolution layers combine semantic and graph states through
-   mixture-of-experts modules.
-3. **Pseudo-unseen training** removes the history and associated articles of a
-   sampled subset of seen types while retaining their descriptions and future
-   labels. This simulates unseen types during training and reduces seen-type
-   bias.
-
 ## Repository structure
 
 ```text
@@ -37,10 +22,6 @@ EvoEP/
 ├── requirements.txt            # Pinned Python dependencies
 └── pyproject.toml              # Installable package metadata
 ```
-
-The repository intentionally excludes raw data, pretrained model weights,
-checkpoints, cached features, logs, baseline implementations, calibration,
-test-time evaluation, plotting code, and experiment-management utilities.
 
 ## Environment
 
