@@ -31,7 +31,6 @@ EvoEP/
 ├── evoep/
 │   ├── cli/                    # Data inspection, preparation, precompute, train
 │   ├── data/                   # Readers, type splits, isolation, temporal windows
-│   ├── evaluation/             # Validation metrics required for checkpoint selection
 │   ├── models/                 # Graph, event, temporal, text, and EvoEP modules
 │   └── training/               # Pseudo-unseen episodes, losses, checkpoints, trainer
 ├── environment.yml             # Conda environment used in the experiments
@@ -40,8 +39,8 @@ EvoEP/
 ```
 
 The repository intentionally excludes raw data, pretrained model weights,
-checkpoints, cached features, logs, baseline implementations, plotting code,
-and experiment-management utilities.
+checkpoints, cached features, logs, baseline implementations, calibration,
+test-time evaluation, plotting code, and experiment-management utilities.
 
 ## Environment
 

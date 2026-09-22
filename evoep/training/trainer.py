@@ -1,9 +1,10 @@
-"""Reusable training engine: model factories do not own data, metrics, or checkpointing."""
+"""Reusable EvoEP training engine."""
 import json
 import time
 from pathlib import Path
 import numpy as np
 import torch
+from sklearn.metrics import average_precision_score
 from ..config import artifact_path
 from ..paths import resolve_write_path,atomic_write_json,object_hash
 from ..reproducibility import seed_everything,get_rng_state,restore_rng_state,capture_environment,choose_device
@@ -11,9 +12,7 @@ from ..data.dataset import EventWindowDataset,EpisodeCollator
 from ..data.audit import audit_artifacts,assert_history_contract
 from ..models.text import TextFeatureStore
 from ..models.registry import build_model
-from ..evaluation.evaluator import collect_predictions
-from ..evaluation.metrics import metric_report,sigmoid
-from .episodes import sample_episode
+from .episodes import sample_episode,evaluation_episode
 from .losses import prediction_losses,total_loss,ranking_loss
 from .checkpoint import save_checkpoint,load_checkpoint,append_train_log
 
@@ -85,12 +84,31 @@ class Trainer:
                 "seconds":time.monotonic()-start_time,"router_mean":np.mean(routing,axis=0).tolist(),**stats}
 
     def validate(self):
-        table=collect_predictions(self.model,self.val_data,"validation")
-        report=metric_report(table["labels"],table["raw_logits"],sigmoid(table["raw_logits"])>.5,
-                             table["candidate_ids"],self.train_data.split["seen_ids"])
-        score=report["groups"]["harmonic_macro_ap_seen_unseen"]
-        if score is None:raise ValueError("Validation groups lack positive labels; protocol cannot select a model")
-        return score,report
+        self.model.eval();collator=EpisodeCollator(self.val_data)
+        episode=evaluation_episode(self.val_data.split["seen_ids"])
+        logits=[];labels=[];candidate_ids=None
+        limit=min(self.cfg.train.max_eval_windows or len(self.val_data),len(self.val_data))
+        with torch.no_grad():
+            for start in range(0,limit,self.cfg.train.batch_size):
+                windows=[self.val_data[i] for i in range(start,min(start+self.cfg.train.batch_size,limit))]
+                history,targets=collator(windows,episode)
+                output=self.model(history,self.val_data.seen_features(),self.val_data.candidate_features())
+                logits.append(output.logits.detach().cpu().numpy())
+                labels.append(targets.labels.detach().cpu().numpy())
+                candidate_ids=targets.candidate_ids.detach().cpu().numpy()
+        if not logits:raise ValueError("No validation windows")
+        logits=np.concatenate(logits);labels=np.concatenate(labels)
+        seen=set(self.train_data.split["seen_ids"])
+        seen_mask=np.array([int(x) in seen for x in candidate_ids],dtype=bool)
+        def macro_ap(mask):
+            values=[]
+            for i in np.flatnonzero(mask):
+                if labels[:,i].sum()>0:values.append(average_precision_score(labels[:,i],logits[:,i]))
+            return float(np.mean(values)) if values else None
+        seen_ap,unseen_ap=macro_ap(seen_mask),macro_ap(~seen_mask)
+        if seen_ap is None or unseen_ap is None:raise ValueError("Validation groups lack positive labels")
+        score=2*seen_ap*unseen_ap/(seen_ap+unseen_ap) if seen_ap+unseen_ap else 0.0
+        return score,{"seen_macro_ap":seen_ap,"unseen_macro_ap":unseen_ap,"harmonic_macro_ap":score}
 
     def state(self,epoch):
         return {"model":self.model.state_dict(),"optimizer":self.optimizer.state_dict(),

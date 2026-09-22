@@ -22,9 +22,7 @@ DEFAULTS = {
   "epochs":50,"patience":8,"lr":.0003,"weight_decay":.0001,"grad_clip":1.0,
   "optimizer":"adamw","precision":"fp32","num_workers":0,"device":"cpu","cpu_threads":4,
   "selection_metric":"harmonic_macro_ap_seen_unseen","refit_after_validation":False,
-  "max_train_windows":None,"max_eval_windows":None},
- "calibration":{"gamma_grid":[i/4 for i in range(-8,9)],"threshold_min":.05,
-  "threshold_max":.95,"threshold_step":.01,"objective":"harmonic_macro_f1_seen_unseen"}
+  "max_train_windows":None,"max_eval_windows":None}
 }
 
 class Config(dict):
@@ -88,11 +86,7 @@ def validate_config(cfg):
     if m.graph_layers<0 or m.temporal_layers<0 or not 0<=m.dropout<1: raise ValueError("Invalid model configuration")
     for key in ("max_train_windows","max_eval_windows"):
         if t[key] is not None and (not isinstance(t[key],int) or t[key]<1): raise ValueError(key)
-    c=cfg.calibration
-    if not (0<c.threshold_min<=c.threshold_max<1 and c.threshold_step>0): raise ValueError("Threshold grid")
-    if not c.gamma_grid or 0 not in c.gamma_grid: raise ValueError("gamma_grid must include zero")
     if t.selection_metric!="harmonic_macro_ap_seen_unseen": raise ValueError("selection_metric")
-    if c.objective!="harmonic_macro_f1_seen_unseen": raise ValueError("calibration objective")
 
 def artifact_id(cfg):
     return object_hash({"schema":1,"dataset":cfg.dataset,"data_root":str(Path(cfg.data_root).resolve()),
