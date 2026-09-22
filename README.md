@@ -106,8 +106,3 @@ export TEXT_REVISION=<model-commit-or-local-version>
 The following commands reproduce one EG run with split seed 42 and training
 seed 42. All generated files remain inside the repository under ignored
 directories.
-
-## Citation
-
-The paper is under review. Citation metadata will be updated after publication.
-Until then, please cite the repository title shown in `CITATION.cff`.
